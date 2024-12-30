@@ -1,9 +1,7 @@
 /* Defined before OpenGL and GLUT includes to avoid deprecation messages */
 #define GL_SILENCE_DEPRECATION
-
-#include <GLFW/glfw3.h>
 #include <GL/glew.h>
-#include <GL/glut.h>
+#include <GLFW/glfw3.h>
 #include <iostream>
 
 
@@ -65,6 +63,12 @@ int main(void)
     if (!window)
     {
         glfwTerminate();
+        return -1;
+    }
+    // Initialize GLEW
+    glewExperimental = GL_TRUE;
+    if (glewInit() != GLEW_OK) {
+        std::cerr << "Failed to initialize GLEW" << std::endl;
         return -1;
     }
 
