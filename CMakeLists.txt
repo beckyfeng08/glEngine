@@ -9,4 +9,4 @@ add_subdirectory(external/glfw)
 
 target_include_directories(${PROJECT_NAME} PUBLIC lib PUBLIC external/glfw/include)
 
-target_link_libraries(${PROJECT_NAME} library glfw)
+target_link_libraries(PRIVATE glew PRIVATE library PRIVATE glfw)
