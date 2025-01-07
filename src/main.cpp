@@ -59,8 +59,6 @@ int main(void)
 
     }
     
-
-    
     {
         float positions[] = {
             -0.5f, -0.5f, 
@@ -105,10 +103,9 @@ int main(void)
             glClear(GL_COLOR_BUFFER_BIT);
             shader.Bind();
             shader.SetUniform4f("u_Color", r, 0.3f, 0.8f, 1.0f);
-
-            vb.Bind();
-            ib.Bind();
+            
             va.Bind();
+            ib.Bind();
 
             glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
             glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);

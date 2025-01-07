@@ -7,7 +7,6 @@ struct ShaderProgramSource
     std::string FragmentSource;
 };
 
-
 class Shader
 {
 private:
@@ -23,11 +22,14 @@ public:
     void Unbind() const;
     
     // Set uniforms
-    void SetUniform4f(const std::string& name, float v0, float v1, float f2, float f3);
+    void SetUniform1f(const std::string& name, float v0);
+    void SetUniform2f(const std::string& name, float v0, float v1);
+    void SetUniform3f(const std::string& name, float v0, float v1, float v2);
+    void SetUniform4f(const std::string& name, float v0, float v1, float v2, float v3);
+
 private:
     unsigned int GetUniformLocation(const std::string& name);
     unsigned int CompileShader(const std::string& source, unsigned int type) ;
     unsigned int CreateShader(const std::string& vertexShader, const std::string& fragmentShader);
     ShaderProgramSource ParseShader(const std::string& filepath);
-
 };

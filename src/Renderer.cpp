@@ -2,8 +2,6 @@
 #include "Renderer.h"
 #include <iostream>
 
-
-
 #define GLCall(x) GLClearError();\
     x;\
     assert((GLLogCall(#x, __FILE__, __LINE__)))
@@ -23,4 +21,12 @@ bool GLLogCall(const char* function, const char* file, int line)
         return false;
     }
     return true;
+}
+
+void Renderer::Draw(const VertexArray& va, const IndexBuffer& ib, const Shader& shader) const
+{
+    shader.Bind();
+    va.Bind();
+    ib.Bind();
+    glDrawElements(GL_TRIANGLES, ib.GetCount(), GL_UNSIGNED_INT, nullptr);
 }
