@@ -3,51 +3,18 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
+#include <fstream>
+#include <string>
+#include <sstream>
+#include "Renderer.h"
+#include "VertexBuffer.h"
+#include "IndexBuffer.h"
+#include "VertexArray.h"
+#include "Shader.h"
 
-
-static unsigned int CompileShader(const std::string& source, unsigned int type) 
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
-    unsigned int id = glCreateShader(type);
-    const char* src = source.c_str(); // pointer to data in std::string; make sure theres stuff in source
-    glShaderSource(id, 1, &src, nullptr);
-    glCompileShader(id);
-
-    // error handling
-    int result;
-    glGetShaderiv(id, GL_COMPILE_STATUS, &result);   
-    if (result == GL_FALSE)
-    {
-        // shader did not compile sucessfully
-        int length;
-        glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length);
-        
-        char* message = (char*) alloca(length * sizeof(char)); // we allocate on the stack dynamically
-        glGetShaderInfoLog(id, length, &length, message);
-        std::cout << "Failed to compile shader" << (type == GL_VERTEX_SHADER ?  "vertex" : "fragment")<< std::endl;
-        std::cout << message << std::endl;
-        glDeleteShader(id);
-        return 0;
-    }
-
-    return id;
-}
-
-static unsigned int CreateShader(const std::string& vertexShader, const std::string& fragmentShader) 
-{
-    // the vertexShader and fragmentShader are the actual source code
-    unsigned int program = glCreateProgram();
-    unsigned int vs = CompileShader(vertexShader, GL_VERTEX_SHADER );
-    unsigned int fs = CompileShader(fragmentShader, GL_FRAGMENT_SHADER);
-
-    glAttachShader(program, vs);
-    glAttachShader(program, fs);
-    glLinkProgram(program);
-    glValidateProgram(program);
-
-    glDeleteShader(vs);
-    glDeleteShader(fs);
-
-    return program;
+glViewport(0, 0, width, height);
 }
 
 int main(void)
@@ -58,77 +25,107 @@ int main(void)
     if (!glfwInit())
         return -1;
 
+    // https://stackoverflow.com/questions/62990972/why-is-opengl-giving-me-the-error-error-01-version-330-is-not-support
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+    #ifdef __APPLE__
+        std::cout << "I'm apple machine" << std::endl;
+        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+    #endif
+    //
+
     /* Create a windowed mode window and its OpenGL context */
-    window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
+    window = glfwCreateWindow(500, 500, "Hello World", NULL, NULL);
     if (!window)
     {
         glfwTerminate();
         return -1;
     }
-    // Initialize GLEW
-    glewExperimental = GL_TRUE;
-    if (glewInit() != GLEW_OK) {
-        std::cerr << "Failed to initialize GLEW" << std::endl;
-        return -1;
-    }
+    
 
     /* Make the window's context current */
     glfwMakeContextCurrent(window);
 
-    float positions[6] = {
-        -0.5f, -0.5f, 
-        0.0f, 0.5f, 
-        0.5f, -0.5f
-    };
+    // Initialize GLEW
+    glewExperimental=GL_TRUE;
+    GLenum err = glewInit(); 
 
-    unsigned int buffer;
-    glGenBuffers(1, &buffer); // create a buffer give it an id
-    glBindBuffer(GL_ARRAY_BUFFER, buffer);
-    glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(float), positions, GL_STATIC_DRAW);
-   
-    unsigned int vao;
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
-
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 2, GL_FLOAT,
-     GL_FALSE, sizeof(float) * 2, 0);
-    
-
-    
-    std::string vertexShader = 
-        "#version 410 core \n"
-        "\n"
-        "layout(location = 0) in vec4 position;\n"
-        "\n"
-        "void main()\n"
-        "{\n"
-        "gl_Position = position;\n"
-        "}\n";
-     
-    std::string fragmentShader = 
-        "#version 410 core \n"
-        "\n"
-        "layout(location = 0) out vec4 color;\n"
-        "\n"
-        "void main()\n"
-        "{\n"
-        "color = vec4(1.0, 0.0, 0.0, 1.0);\n"
-        "}\n";
-    unsigned int shader = CreateShader(vertexShader, fragmentShader);
-    glUseProgram(shader);
-    /* Loop until the user closes the window */
-    while (!glfwWindowShouldClose(window))
+    if (GLEW_OK != err)
     {
-        /* Render here */
-        glClear(GL_COLOR_BUFFER_BIT);
+        /* Problem: glewInit failed, something is seriously wrong. */
+        fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
 
-        glDrawArrays(GL_TRIANGLES, 0, 3);
-        /* Swap front and back buffers */
-        glfwSwapBuffers(window);
+    }
+    
 
-        /* Poll for and process events */
-        glfwPollEvents();
+    
+    {
+        float positions[] = {
+            -0.5f, -0.5f, 
+            0.5f, -0.5f, 
+            0.5f, 0.5f,
+            -0.5f, 0.5f
+
+        };
+
+        unsigned int indices[] = {
+            0, 1, 2,
+            2, 3, 0
+        };
+
+        VertexArray va;
+        VertexBuffer vb(positions, 4 * 2 * sizeof(float));
+
+        VertexBufferLayout layout;
+        layout.Push<float>(2);
+        va.AddBuffer(vb, layout);
+        
+        IndexBuffer ib(indices, 6);
+
+        Shader shader("../res/shaders/basic.shader");
+        shader.Bind();
+        shader.SetUniform4f("u_Color",  0.8f, 0.3f, 0.8f, 1.0f);
+
+        va.Unbind();
+        shader.Unbind();
+        vb.Unbind();
+        ib.Unbind();
+
+        float r = 0.0f;
+        float increment = 0.05f;
+
+        glfwSwapInterval(1);
+    
+        /* Loop until the user closes the window */
+        while (!glfwWindowShouldClose(window))
+        {
+            /* Render here */
+            glClear(GL_COLOR_BUFFER_BIT);
+            shader.Bind();
+            shader.SetUniform4f("u_Color", r, 0.3f, 0.8f, 1.0f);
+
+            vb.Bind();
+            ib.Bind();
+            va.Bind();
+
+            glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+            glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+            
+            if (r > 1.0f)
+                increment = -0.05f;
+            else if (r < 0.0f)
+                increment = 0.05f;
+            
+            r += increment;
+
+            /* Swap front and back buffers */
+            glfwSwapBuffers(window);
+
+            /* Poll for and process events */
+            glfwPollEvents();
+        }
     }
 
     glfwTerminate();
