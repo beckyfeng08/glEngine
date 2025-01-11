@@ -7,7 +7,6 @@
 #include "Shader.h"
 
 
-
 #define GLCall(x) GLClearError();\
     x;\
     assert((GLLogCall(#x, __FILE__, __LINE__)))
@@ -19,9 +18,6 @@
 class Renderer
 {
 public:
+    void Clear() const;
     void Draw(const VertexArray& va, const IndexBuffer& ib, const Shader& shader) const;
-private:
-
-
-
 };
