@@ -2,7 +2,7 @@
 
 <code>git clone https://github.com/beckyfeng08/glEngine.git</code>
 
-<code>mkdir build; cd build</code>
+<code>cd glEngine; mkdir build; cd build</code>
 
 Run the following commands in order from the glEngine directory
 
