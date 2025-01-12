@@ -7,4 +7,4 @@ Run the following commands in order from the glEngine directory
 Only tested so far for apple arm64
 Uses C++11 (to support imgui dependency)
 
-no other dependencies need to be downloaded
+requires at least cmake 3.31.2 to build
