@@ -1,9 +1,11 @@
 ## Building and running
 
 <code>git clone https://github.com/beckyfeng08/glEngine.git</code>
+
 <code>cd glEngine</code>
 
 Setting up git submodules:
+
 <code>git submodule init; git submodule update</code>
 
 <code> mkdir build; cd build</code>
